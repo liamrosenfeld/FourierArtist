@@ -28,7 +28,7 @@
 import Foundation
 
 func dft(x: [Double]) -> [ComplexVector] {
-    var vectors = [ComplexVector]() // "X" in the equation above
+    var vectors = [ComplexVector]() // "X" in the equation above. It's just a collection of complex vectors.
     let N = x.count
     
     for k in 0..<N {
@@ -36,17 +36,20 @@ func dft(x: [Double]) -> [ComplexVector] {
         var im = 0.0 // imaginary component of the dft equation above, it will act as the y coordinate
         
         for n in 0..<N {
-            let phi = (2 * Double.pi * Double(k) * Double(n)) / Double(N)
-            re += x[n] * cos(phi)
-            im -= x[n] * sin(phi)
+            let phi = (2 * Double.pi * Double(k) * Double(n)) / Double(N) // This is shared between both sections of the calculation
+            re += x[n] * cos(phi) // This is the cartesian complex -> polar complex equation...
+            im -= x[n] * sin(phi) // ...which is how it is drawn later (theta = time)
         }
         
-        // This Scales It Down
+        // This Scales It Down (Not part of the original equation)
         re /= Double(N)
         im /= Double(N)
         
-        let amp = sqrt(re * re + im * im)
-        let phase = atan2(im, re)
+        // Calculates Atributes of Vectors
+        let amp = sqrt(re * re + im * im) // Magnitude of the vector (distance formula = √(a^2 + b^2)). Later used as radius of Epicircle.
+        let phase = atan2(im, re) // Angle from positive x-axis. Later used to place epicircles relative to eachother.
+        
+        // Saves it into the array
         vectors.append(ComplexVector(re: re, im: im, freq: k, amp: amp, phase: phase))
     }
     
@@ -73,6 +76,10 @@ NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "F
     let file = notification.object as! String
     applyfourier(on: file)
 }
+
+/*:
+ If you are interested in how it draws, check out Scene.swift! It's all explained in depth there.
+ */
 
 // Now lets display it!
 import PlaygroundSupport

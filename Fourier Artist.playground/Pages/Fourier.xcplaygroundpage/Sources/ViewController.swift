@@ -12,15 +12,28 @@ import GameplayKit
 
 public class ViewController : NSViewController {
     
+    // Setup
+    var scene: Scene
+    public init(with scene: Scene) {
+        self.scene = scene
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        self.scene = Scene()
+        super.init(coder: coder)
+    }
+    
+
+    // MARK: Interface
     var skView = SKView()
     var jsonSelector = NSPopUpButton(frame: NSRect(origin: CGPoint.zero, size: CGSize(width: 100, height: 50)))
-    
     override public func loadView() {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 900, height: 600))
         let view = NSView(frame: frame)
         
         fillSelector()
-        skView = createSKView(pointsFile: jsonSelector.selectedItem?.title ?? "swiftLogo")
+        skView = createSKView()
         
         view.addSubview(skView)
         view.addSubview(jsonSelector)
@@ -29,7 +42,7 @@ public class ViewController : NSViewController {
     
     func fillSelector() {
         jsonSelector.target = self
-        jsonSelector.action = #selector(updatePointFile)
+        jsonSelector.action = #selector(fileSelected)
         
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: Directories.resources, includingPropertiesForKeys: nil)
@@ -43,21 +56,17 @@ public class ViewController : NSViewController {
         }
     }
     
-    func createSKView(pointsFile: String) -> SKView {
+    func createSKView() -> SKView {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 900, height: 600))
         let view = SKView(frame: frame)
         
-        // Load the SKScene
+        // Set Size
         let sceneSize = CGSize(width: 1800, height: 1200)
-        let scene = Scene()
-        scene.pointsFile = pointsFile
         scene.size = sceneSize
-        // Set the scale mode to scale to fit the window
         scene.scaleMode = .aspectFit
         
-        // Present the scene
+        // Present
         view.presentScene(scene)
-        
         view.ignoresSiblingOrder = true
         
         // REMOVE LATER
@@ -68,10 +77,11 @@ public class ViewController : NSViewController {
         return view
     }
     
-    @objc func updatePointFile() {
-        let file = jsonSelector.selectedItem?.title ?? "swiftLogo"
-        let scene = skView.scene as! Scene
-        scene.pointsFile = file
+    @objc func fileSelected() {
+        var notification = Notification(name: Notification.Name("FileChanged"))
+        notification.object = jsonSelector.selectedItem?.title ?? "swiftLogo"
+        NotificationCenter.default.post(notification)
     }
 }
+
 

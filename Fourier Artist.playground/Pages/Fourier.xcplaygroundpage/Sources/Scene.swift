@@ -10,40 +10,30 @@ import SpriteKit
 import GameplayKit
 import Foundation
 
-class Scene: SKScene {
-    var fourierX = [ComplexVector]()
-    var fourierY = [ComplexVector]()
+public class Scene: SKScene {
+    // MARK: Constants
+    private var theta = 0.0 // Theta on Polar Coordinate
+    private var delta = 0.0
+    private var path = [CGPoint]()
     
-    var theta = 0.0 // Theta on Polar Coordinate
-    var delta = 0.0
-    var path = [CGPoint]()
     
-    // TODO: Don't hardcode default value
-    var pointsFile: String = "swiftLogo" {
-        didSet {
-            path.removeAll()
-            theta = 0
-            self.removeAllChildren()
-            sceneDidLoad()
-        }
-    }
+    // MARK: Points
+    private var fourierX = [ComplexVector]()
+    private var fourierY = [ComplexVector]()
     
-    override func sceneDidLoad() {
-        var xValues = [Double]()
-        var yValues = [Double]()
+    public func setPoints(to points: ComplexVectorSet) {
+        fourierX = points.x
+        fourierY = points.y
         
-        for (index, point) in points(from: pointsFile).enumerated() where index % 6 == 0 {
-            xValues.append(point.x)
-            yValues.append(point.y)
-        }
-        
-        fourierX = dft(x: xValues).sorted{ $0.amp > $1.amp }
-        fourierY = dft(x: yValues).sorted{ $0.amp > $1.amp }
-        
+        path.removeAll()
+        theta = 0
+        self.removeAllChildren()
         delta = Double.pi * 2 / Double(fourierY.count)
     }
     
-    override func update(_ currentTime: TimeInterval) {
+    
+    // MARK: Cycle
+    override public func update(_ currentTime: TimeInterval) {
         self.removeAllChildren()
         self.backgroundColor = NSColor.black
 
@@ -85,27 +75,4 @@ class Scene: SKScene {
     }
 }
 
-func points(from file: String) -> [Point] {
-    var points = [Point]()
-    var jsonString = ""
-    
-    if let url = Bundle.main.url(forResource: file, withExtension: "json") {
-        do {
-            jsonString = try String(contentsOfFile: url.path)
-        } catch {
-            fatalError("Empty Json File")
-        }
-    } else {
-        fatalError("No JSON File at \(file)")
-    }
-    
-    let jsonData = Data(jsonString.utf8)
-    let decoder = JSONDecoder()
-    do {
-        points = try decoder.decode([Point].self, from: jsonData)
-    } catch {
-        print(error.localizedDescription)
-    }
-    
-    return points
-}
+

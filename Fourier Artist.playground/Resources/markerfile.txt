@@ -1,0 +1,2 @@
+This file allows the program to find the resource folder
+Please don't delete this... it would break custom paths.

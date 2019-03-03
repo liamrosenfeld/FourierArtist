@@ -17,7 +17,6 @@ public class ViewController: NSViewController {
         let viewFrame = CGRect(origin: CGPoint.zero, size: CGSize(width: 500, height: 500))
         let view = NSView(frame: viewFrame)
         view.wantsLayer = true
-        view.layer!.backgroundColor = .black
         
         let drawFrame = CGRect(origin: CGPoint.zero, size: CGSize(width: 500, height: 400))
         drawView.frame = drawFrame
@@ -25,22 +24,28 @@ public class ViewController: NSViewController {
         drawView.layer?.backgroundColor = .white
         
         let clearButton = NSButton(title: "Clear", target: self, action: #selector(clear))
-        let clearButtonPos = NSPoint(x: 10, y: 450)
+        let clearButtonPos = NSPoint(x: 10, y: 400)
         clearButton.setFrameOrigin(clearButtonPos)
         
         let saveButton = NSButton(title: "Save Points", target: self, action: #selector(savePoints))
-        let saveButtonPos = NSPoint(x: 400, y: 450)
+        let saveButtonPos = NSPoint(x: 400, y: 400)
         saveButton.setFrameOrigin(saveButtonPos)
         
-        let namePos = NSPoint(x: 200, y: 450)
+        let namePos = NSPoint(x: 230, y: 410)
         let nameSize = NSSize(width: 50, height: 15)
-        let nomeFrame = NSRect(origin: namePos, size: nameSize)
-        nameField.frame = nomeFrame
+        let nameFrame = NSRect(origin: namePos, size: nameSize)
+        nameField.frame = nameFrame
+        
+        let nameLabel = NSTextField(labelWithString: "Name:")
+        var labelFrame = nameFrame
+        labelFrame.origin.x = labelFrame.origin.x - 50
+        nameLabel.frame = labelFrame
         
         view.addSubview(drawView)
         view.addSubview(clearButton)
         view.addSubview(saveButton)
         view.addSubview(nameField)
+        view.addSubview(nameLabel)
         
         self.view = view
     }

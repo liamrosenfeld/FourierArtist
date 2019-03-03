@@ -1,5 +1,5 @@
 //
-//  NSBezierPath+CGPath.swift
+//  NSBezierPath+CGPoint.swift
 //  Fourier Artist
 //
 //  Created by Liam on 2/15/19.

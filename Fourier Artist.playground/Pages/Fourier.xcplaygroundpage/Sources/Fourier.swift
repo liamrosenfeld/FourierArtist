@@ -16,7 +16,6 @@ struct ComplexVector {
     var phase: Double
 }
 
-// the summation formula (https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Definition)
 func dft(x: [Double]) -> [ComplexVector] {
     var X = [ComplexVector]()
     let N = x.count

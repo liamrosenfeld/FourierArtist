@@ -16,6 +16,9 @@ public class Scene: SKScene {
     private var delta = 0.0
     private var path = [CGPoint]()
     
+    private var xEpicycleStart = CGPoint.zero
+    private var yEpicycleStart = CGPoint.zero
+    
     
     // MARK: Points
     private var fourierX = [ComplexVector]()
@@ -31,20 +34,35 @@ public class Scene: SKScene {
         delta = Double.pi * 2 / Double(fourierY.count)
     }
     
+    // MARK: - Setup
+    override public func didMove(to view: SKView) {
+        self.backgroundColor = NSColor.black
+        
+        xEpicycleStart = CGPoint(x: Double(self.frame.width / 2 + 100), y: 100)
+        yEpicycleStart = CGPoint(x: 100, y: Double(self.frame.height / 2 + 100))
+    }
+    
+    
     
     // MARK: Cycle
     override public func update(_ currentTime: TimeInterval) {
+        // Reset
         self.removeAllChildren()
-        self.backgroundColor = NSColor.black
-
-        let vx = epiCycles(x: Double(self.frame.width / 2 + 100), y: 100, rotation: 0, fouriers: fourierX)
-        let vy = epiCycles(x: 100, y: Double(self.frame.height / 2 + 100), rotation: Double.pi / 2, fouriers: fourierY)
+        
+        // Draw Epicycles and Get Next Point For Shape
+        let vx = epiCycles(start: xEpicycleStart, rotation: 0, fouriers: fourierX)
+        let vy = epiCycles(start: yEpicycleStart, rotation: Double.pi / 2, fouriers: fourierY)
         let v = CGPoint(x: vx.x, y: vy.y)
-        path.insert(v, at: 0)
+        
+        // Draw Guider Lines
         drawLine(from: vx, to: v)
         drawLine(from: vy, to: v)
-
+        
+        // Add New Point To Path and Connect It
+        path.insert(v, at: 0)
         drawLine(through: path)
+        
+        // Update Time (The Theta of the Circle)
         theta += delta
         if (theta > Double.pi * 2) {
             theta = 0
@@ -52,26 +70,32 @@ public class Scene: SKScene {
         }
     }
     
-    func epiCycles(x: Double, y: Double, rotation: Double, fouriers: [ComplexVector]) -> CGPoint {
-        var x = x
-        var y = y
+    
+    
+    func epiCycles(start: CGPoint, rotation: Double, fouriers: [ComplexVector]) -> CGPoint {
+        // Set Starting Points
+        var center = start
         
         for fourier in fouriers {
-            let prevPoint = CGPoint(x: x, y: y)
+            let prevCenter = center
             
+            // Properties of The Vector
             let freq = fourier.freq
             let radius = fourier.amp
             let phase = fourier.phase
-            x += radius * cos(Double(freq) * theta + phase + rotation)
-            y += radius * sin(Double(freq) * theta + phase + rotation)
             
-            drawEllipse(center: prevPoint, radius: radius)
+            // Draw Ellipse
+            drawEllipse(center: prevCenter, radius: radius)
             
-            let newPoint = CGPoint(x: x, y: y)
-            drawLine(from: prevPoint, to: newPoint)
+            // Find Next Center
+            center.x += CGFloat(radius * cos(Double(freq) * theta + phase + rotation))
+            center.y += CGFloat(radius * sin(Double(freq) * theta + phase + rotation))
+            
+            // Draw Line Connecting Centers
+            drawLine(from: prevCenter, to: center)
         }
         
-        return CGPoint(x: x, y: y)
+        return center
     }
 }
 

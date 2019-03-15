@@ -27,33 +27,39 @@ public class ViewController : NSViewController {
 
     // MARK: Interface
     var skView = SKView()
-    var jsonSelector = NSPopUpButton(frame: NSRect(origin: CGPoint.zero, size: CGSize(width: 100, height: 50)))
+    var jsonSelector = NSPopUpButton(frame: NSRect.zero)
     override public func loadView() {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 900, height: 600))
         let view = NSView(frame: frame)
         
-        fillSelector()
+        jsonSelector = createSelector()
         skView = createSKView()
+        let inverseButton = createInverseButton()
         
         view.addSubview(skView)
         view.addSubview(jsonSelector)
+        view.addSubview(inverseButton)
+        
         self.view = view
     }
     
-    func fillSelector() {
-        jsonSelector.target = self
-        jsonSelector.action = #selector(fileSelected)
+    func createSelector() -> NSPopUpButton {
+        let selector = NSPopUpButton(frame: NSRect(origin: CGPoint.zero, size: CGSize(width: 100, height: 50)))
+        selector.target = self
+        selector.action = #selector(fileSelected)
         
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: Directories.resources, includingPropertiesForKeys: nil)
             for file in fileURLs {
                 if file.pathExtension == "json" {
-                    jsonSelector.addItem(withTitle: file.deletingPathExtension().lastPathComponent)
+                    selector.addItem(withTitle: file.deletingPathExtension().lastPathComponent)
                 }
             }
         } catch {
             print("Error while enumerating files \(Directories.resources.path): \(error.localizedDescription)")
         }
+        
+        return selector
     }
     
     func createSKView() -> SKView {
@@ -77,9 +83,26 @@ public class ViewController : NSViewController {
         return view
     }
     
+    func createInverseButton() -> NSButton {
+        let button = NSButton(title: "Print Equation", target: self, action: #selector(giveInverse))
+        let place = CGPoint(x: 200, y: 20)
+        let frame = NSRect(origin: place, size: button.frame.size)
+        button.frame = frame
+        return button
+    }
+    
     @objc func fileSelected() {
-        var notification = Notification(name: Notification.Name("FileChanged"))
-        notification.object = jsonSelector.selectedItem?.title ?? "swiftLogo"
+        var notification = Notification(name: .FileChanged)
+        guard let selectedPath = jsonSelector.selectedItem?.title else {
+            print("No Path Selected")
+            return
+        }
+        notification.object = selectedPath
+        NotificationCenter.default.post(notification)
+    }
+    
+    @objc func giveInverse() {
+        let notification = Notification(name: .InverseFourier)
         NotificationCenter.default.post(notification)
     }
 }

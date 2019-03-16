@@ -31,7 +31,7 @@ public func pointValues(from file: String) -> ([Double], [Double]) {
     var xValues = [Double]()
     var yValues = [Double]()
     
-    for (index, point) in normPoints.enumerated() where index % 6 == 0 {
+    for point in normPoints {
         xValues.append(point.x)
         yValues.append(point.y)
     }

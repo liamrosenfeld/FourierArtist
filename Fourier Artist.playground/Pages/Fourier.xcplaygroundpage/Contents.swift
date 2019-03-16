@@ -24,10 +24,14 @@
  ![dft](Images/dft.jpg)
  
  As you can see, this iterates a summation over a finite set instead--so it is perfect for computers.
- 
+ */
+
+/*:
  This works because complex numbers can be expressed in polar form as:
  
  `r(cosθ + 𝓲sinθ)`
+ 
+ And due to the nature of the complex plane, the real component acts as the x value, and the imaginary component as the y value.
  */
 
 import Foundation
@@ -64,9 +68,9 @@ func dft(x: [Double]) -> [ComplexVector] {
 /*:
  The array generated can then be converted back into an equation using the inverse:
  
- ![dft](Images/dft.jpg)
+ ![dft](Images/inverse.jpg)
  
- Just like for the distrubuted fourier transform, the e^(𝓲...) can be expanded using Euler's identity.
+ Just like for the distrubuted fourier transform, the e^𝓲t can be expanded to cost+𝓲sint using Euler's identity.
  That will cause the section past the summation to be:
  
  `cos(2πkn/N)+𝓲sin(2πkn/N)`
@@ -83,9 +87,9 @@ func dft(x: [Double]) -> [ComplexVector] {
 
  Because the real component is only relevant to the horizontal equation, and the imaginary component is only relevant to the vertical component, this equation can be simplified to:
  
- `horizontal(θ) = (1/N)(Acos(θkn/N+p))...`
+ `horizontal(θ) = (1/N)(Acos((θkn/N)+p)+...)`
  
- `vertical(θ)   = (1/N)(Asin(θkn/N+p))...`
+ `vertical(θ)   = (1/N)(Asin((θkn/N)+p)+...)`
  
  Each point is then a cartesian coordinate `(horizontal(θ), vertical(θ))` where θ < 2π
  
@@ -99,7 +103,7 @@ enum inverseOrientation: String {
 
 func inverseDFT(on vectors: [ComplexVector], for orientation: inverseOrientation) -> String{
     let N = vectors.count
-    var equation = "1/\(N) * "
+    var equation = "1/\(N) * ("
     for (n, vector) in vectors.enumerated() {
         let A = vector.amp
         let k = vector.freq
@@ -107,7 +111,7 @@ func inverseDFT(on vectors: [ComplexVector], for orientation: inverseOrientation
         
         let inside = "θ*\(k * n / N) + \(p)"
         let segment = "\(A)\(orientation.rawValue)(\(inside))"
-        equation += "(\(segment))"
+        equation += "\(segment)+"
     }
     return equation
 }
@@ -137,7 +141,7 @@ applyfourier(on: "swiftLogo")
  (Moving the SKScene class to here would be too cluttered)
  */
 
-// Now we just have to do set observers so this code can react to the UI
+// This Just Sets Observers So This Code Can React To The UI
 NotificationCenter.default.addObserver(forName: .FileChanged, object: nil, queue: nil) { notification in
     let file = notification.object as! String
     applyfourier(on: file)

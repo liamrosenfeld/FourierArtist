@@ -32,13 +32,13 @@ extension SKScene {
     }
     
     func drawEllipse(center: CGPoint, radius: Double) {
-        let corner = CGPoint(x: Double(center.x) - (radius/2), y: Double(center.y) - (radius/2))
+        let corner = CGPoint(x: Double(center.x) - radius, y: Double(center.y) - radius)
         let frame = CGSize(width: radius * 2, height: radius * 2)
         let rect = CGRect(origin: corner, size: frame)
         let ellipse = SKShapeNode.init(ellipseIn: rect)
         ellipse.strokeColor = NSColor.white
         ellipse.fillColor = NSColor.clear
-        ellipse.alpha = 0.5
+        ellipse.alpha = 0.4
         ellipse.name = "Ellipse"
         self.addChild(ellipse)
     }

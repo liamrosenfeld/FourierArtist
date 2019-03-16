@@ -36,30 +36,29 @@
 
 import Foundation
 
-func dft(x: [Double]) -> [ComplexVector] {
-    var vectors = [ComplexVector]() // "X" in the equation above. It's just a collection of complex vectors.
-    let N = x.count
+func dft(points: [Point]) -> [Wave] {
+    var vectors = [Wave]() // "X" in the equation above. It's just a collection of complex vectors.
+    let N = points.count
     
     for k in 0..<N {
-        var re = 0.0 // real component of the dft equation above, it will act as the x coordinate
-        var im = 0.0 // imaginary component of the dft equation above, it will act as the y coordinate
+        var complex = Complex() // real component acts as x, imaginary component acts as y
         
         for n in 0..<N {
-            let phi = (2 * Double.pi * Double(k) * Double(n)) / Double(N) // This is shared between both sections of the calculation
-            re += x[n] * cos(phi) // This is the cartesian complex -> polar complex equation...
-            im -= x[n] * sin(phi) // ...which is how it is drawn later (theta = time)
+            let phi = (2 * Double.pi * Double(k) * Double(n)) / Double(N) // Inside the Paren
+            let cPhi = Complex(re: cos(phi), im: -sin(phi)) // Inside the Brackets
+            complex += points[n].complex * cPhi
         }
         
         // This Scales It Down (Not part of the original equation)
-        re /= Double(N)
-        im /= Double(N)
+        complex.re /= Double(N)
+        complex.im /= Double(N)
         
         // Calculates Atributes of Vectors
-        let amp = sqrt(re * re + im * im) // Magnitude of the vector (distance formula = √(a^2 + b^2)). Later used as radius of Epicircle.
-        let phase = atan2(im, re) // Angle from positive x-axis. Later used to place epicycles relative to eachother.
+        let amp = sqrt(complex.re * complex.re + complex.im * complex.im) // Magnitude of the vector (distance formula = √(a^2 + b^2)). Later used as radius of Epicircle.
+        let phase = atan2(complex.im, complex.re) // Angle from positive x-axis. Later used to place epicycles relative to eachother.
         
         // Saves it into the array
-        vectors.append(ComplexVector(re: re, im: im, freq: k, amp: amp, phase: phase))
+        vectors.append(Wave(freq: k, amp: amp, phase: phase))
     }
     
     return vectors
@@ -101,37 +100,31 @@ enum inverseOrientation: String {
     case vertical   = "sin"
 }
 
-func inverseDFT(on vectors: [ComplexVector], for orientation: inverseOrientation) -> String{
-    let N = vectors.count
-    var equation = "1/\(N) * ("
-    for (n, vector) in vectors.enumerated() {
-        let A = vector.amp
-        let k = vector.freq
-        let p = vector.phase
-        
-        let inside = "θ*\(k * n / N) + \(p)"
-        let segment = "\(A)\(orientation.rawValue)(\(inside))"
-        equation += "\(segment)+"
-    }
-    return equation
-}
+//func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> String{
+//    let N = vectors.count
+//    var equation = "1/\(N) * ("
+//    for (n, vector) in vectors.enumerated() {
+//        let A = vector.amp
+//        let k = vector.freq
+//        let p = vector.phase
+//
+//        let inside = "θ*\(k * n / N) + \(p)"
+//        let segment = "\(A)\(orientation.rawValue)(\(inside))"
+//        equation += "\(segment)+"
+//    }
+//    return equation
+//}
 
 
 // We can then use that equation to fill our Scene with the points
 var scene = Scene()
-var x = [ComplexVector]()
-var y = [ComplexVector]()
 
 func applyfourier(on file: String) {
-    let (xValues, yValues) = pointValues(from: file)
+    var fouriered = dft(points: points(from: file))
     
-    x = dft(x: xValues)
-    y = dft(x: yValues)
+    fouriered.sort{ $0.amp > $1.amp }
     
-    x.sort{ $0.amp > $1.amp }
-    y.sort{ $0.amp > $1.amp }
-    
-    scene.setPoints(to: ComplexVectorSet(x, y))
+    scene.setPoints(to: fouriered)
 }
 
 applyfourier(on: "swiftLogo")
@@ -149,10 +142,10 @@ NotificationCenter.default.addObserver(forName: .FileChanged, object: nil, queue
 
 NotificationCenter.default.addObserver(forName: .InverseFourier, object: nil, queue: nil) { _ in
     print("The X Values are From: horizontal(θ) =")
-    print(inverseDFT(on: x, for: .horizontal))
+//    print(inverseDFT(on: x, for: .horizontal))
     print("")
     print("The Y Values are From: vertical(θ) =")
-    print(inverseDFT(on: y, for: .vertical))
+//    print(inverseDFT(on: y, for: .vertical))
     print("")
     print("Where θ < 2π")
 }

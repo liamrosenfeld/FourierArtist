@@ -138,12 +138,8 @@ class DrawView: NSView {
         }
         
         let cgPoints = fullPath.points
-        let points = cgPoints.enumerated().compactMap { item -> Point? in
-            if item.offset % 9 != 0 {
-                return Point(from: item.element)
-            } else {
-                return nil
-            }
+        let points = cgPoints.enumerated().compactMap {
+            $0.offset % 6 == 0 ? Point(from: $0.element) : nil
         }
         
         let jsonData = try! JSONEncoder().encode(points)

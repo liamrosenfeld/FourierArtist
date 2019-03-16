@@ -16,6 +16,12 @@ public struct Point {
         return CGPoint(x: x, y: y)
     }
     
+    // Initilizers
+    public init(x: Double, y: Double) {
+        self.x = x
+        self.y = y
+    }
+    
     public init(from cgpoint: CGPoint) {
         self.x = Double(cgpoint.x)
         self.y = Double(cgpoint.y)

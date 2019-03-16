@@ -16,30 +16,21 @@ public class Scene: SKScene {
     private var delta = 0.0
     private var path = [CGPoint]()
     
-    private var xEpicycleStart = CGPoint.zero
-    private var yEpicycleStart = CGPoint.zero
-    
-    
     // MARK: Points
-    private var fourierX = [ComplexVector]()
-    private var fourierY = [ComplexVector]()
+    private var fourier = [Wave]()
     
-    public func setPoints(to points: ComplexVectorSet) {
-        fourierX = points.x
-        fourierY = points.y
+    public func setPoints(to vectors: [Wave]) {
+        fourier = vectors
         
         path.removeAll()
         theta = 0
         self.removeAllChildren()
-        delta = Double.pi * 2 / Double(fourierY.count)
+        delta = Double.pi * 2 / Double(vectors.count)
     }
     
     // MARK: - Setup
     override public func didMove(to view: SKView) {
         self.backgroundColor = NSColor.black
-        
-        xEpicycleStart = CGPoint(x: Double(self.frame.width / 2 + 100), y: 100)
-        yEpicycleStart = CGPoint(x: 100, y: Double(self.frame.height / 2 + 100))
     }
     
     
@@ -50,13 +41,7 @@ public class Scene: SKScene {
         self.removeAllChildren()
         
         // Draw Epicycles and Get Next Point For Shape
-        let vx = epiCycles(start: xEpicycleStart, rotation: 0, fouriers: fourierX)
-        let vy = epiCycles(start: yEpicycleStart, rotation: Double.pi / 2, fouriers: fourierY)
-        let v = CGPoint(x: vx.x, y: vy.y)
-        
-        // Draw Guider Lines
-        drawLine(from: vx, to: v)
-        drawLine(from: vy, to: v)
+        let v = epicycles(waves: fourier)
         
         // Add New Point To Path and Connect It
         path.insert(v, at: 0)
@@ -72,26 +57,26 @@ public class Scene: SKScene {
     
     
     
-    func epiCycles(start: CGPoint, rotation: Double, fouriers: [ComplexVector]) -> CGPoint {
+    func epicycles(waves: [Wave]) -> CGPoint {
         // Set Starting Points
-        var center = start
+        var center = CGPoint(x: Double(self.frame.width / 2),
+                             y: Double(self.frame.height / 2))
         
-        for fourier in fouriers {
+        for wave in waves {
             let prevCenter = center
             
             // Properties of The Vector
-            let freq = fourier.freq
-            let radius = fourier.amp
-            let phase = fourier.phase
-            
-            // Draw Ellipse
-            drawEllipse(center: prevCenter, radius: radius)
+            let freq = wave.freq
+            let radius = wave.amp
+            let phase = wave.phase
             
             // Find Next Center
-            center.x += CGFloat(radius * cos(Double(freq) * theta + phase + rotation))
-            center.y += CGFloat(radius * sin(Double(freq) * theta + phase + rotation))
+            let phi = Double(freq) * theta + phase
+            center.x += CGFloat(radius * cos(phi))
+            center.y += CGFloat(radius * sin(phi))
             
-            // Draw Line Connecting Centers
+            // Draw Ellipse and Line Connecting Centers
+            drawEllipse(center: prevCenter, radius: radius)
             drawLine(from: prevCenter, to: center)
         }
         

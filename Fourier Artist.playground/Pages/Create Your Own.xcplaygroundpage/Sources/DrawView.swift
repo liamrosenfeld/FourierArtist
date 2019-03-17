@@ -138,9 +138,10 @@ class DrawView: NSView {
         }
         
         let cgPoints = fullPath.points
-        let points = cgPoints.enumerated().compactMap {
+        var points = cgPoints.enumerated().compactMap {
             $0.offset % 6 == 0 ? Point(from: $0.element) : nil
         }
+        center(points: &points)
         
         let jsonData = try! JSONEncoder().encode(points)
         let text = String(data: jsonData, encoding: .utf8) ?? "There was an Error Saving"
@@ -151,6 +152,28 @@ class DrawView: NSView {
         }
         catch {
             print(error.localizedDescription)
+        }
+    }
+    
+    func center(points: inout [Point]) {
+        var x = 0.0
+        var y = 0.0
+        
+        for point in points {
+            x += point.x
+            y += point.y
+        }
+        
+        x /= Double(points.count)
+        y /= Double(points.count)
+        
+        points = points.map { point -> Point in
+            var point = point
+            point.x -= x
+            point.y -= y
+            point.x *= 2
+            point.y *= 2
+            return point
         }
     }
 

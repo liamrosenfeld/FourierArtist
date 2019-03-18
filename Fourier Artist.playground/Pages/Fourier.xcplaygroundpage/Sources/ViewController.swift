@@ -48,11 +48,13 @@ public class ViewController : NSViewController {
         selector.target = self
         selector.action = #selector(fileSelected)
         
+        selector.addItem(withTitle: "swiftLogo")
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: Directories.resources, includingPropertiesForKeys: nil)
             for file in fileURLs {
-                if file.pathExtension == "json" {
-                    selector.addItem(withTitle: file.deletingPathExtension().lastPathComponent)
+                let fileName = file.deletingPathExtension().lastPathComponent
+                if file.pathExtension == "json" && fileName != "swiftLogo" {
+                    selector.addItem(withTitle: fileName)
                 }
             }
         } catch {

@@ -38,6 +38,7 @@ class DrawView: NSView {
     var lastPoint = CGPoint.zero
     
     override func mouseDown(with event: NSEvent) {
+        clear()
         lastPoint = event.locationInWindow
     }
     

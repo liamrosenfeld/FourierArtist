@@ -6,7 +6,7 @@ waves = getWaves()
 theta = 0
 x = []
 y = []
-while theta <= 2 * np.pi:
+while theta <= 2 * np.pi + 1:
     xValue = 0
     yValue = 0
     for w in waves:

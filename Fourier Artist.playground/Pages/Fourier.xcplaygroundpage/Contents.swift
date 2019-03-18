@@ -13,7 +13,7 @@
  */
 
 /*:
- The standard fourter transform is:
+ The fourter transform normally seen in mathematics is the continuous one:
  
  ![ft](Images/ft.jpg)
  
@@ -67,32 +67,39 @@ func dft(points: [Point]) -> [Wave] {
 /*:
  The array generated can then be converted back into an equation using the inverse:
  
- ![dft](Images/inverse.jpg)
+ ![inverse dft](Images/inv.jpg)
  
- Just like for the distrubuted fourier transform, the e^𝓲t can be expanded to cost+𝓲sint using Euler's identity.
+ Just like for the distrubuted fourier transform, the `e^(𝓲t)` can be expanded to `cos(t)+𝓲sin(t)` using Euler's identity.
  That will cause the section past the summation to be:
  
- `cos(2πkn/N)+𝓲sin(2πkn/N)`
+ `X[k](cos(2πkn/N)+𝓲sin(2πkn/N))`
  
- This can then be expaned to include amplitude, phase, and theta; like in what is used in the epicycle drawer.
+ This can then be modified to include amplitude, phase, and theta.
  
- `Acos(θkn/N+p)+A𝓲sin(θkn/N+p)`
+ `A(cos(θk+p)+𝓲sin(θk+p))`
  
- As you can see, that expands the equation to support a complex vector in polar form, just like the DFT.
- That expansion is mathematically sound because:
- 1. amplitude (A) is simply 'r' in the complex vector polar coordinate form
- 2. phase (P) is simply the starting angle, so it is added each time the polar theta appears inside a trig function
- 3. θ is a section of the 2π period, allowing it to express more than the initial value.
-
- Because the real component is only relevant to the horizontal equation, and the imaginary component is only relevant to the vertical component, this equation can be simplified to:
+ That is mathematically sound because:
+ 1. amplitude (A) is simply X[k] in the original equation. It is also equal to 'r' in the complex polar form.
+ 2. phase (P) is the starting angle, so it is just added to the radians inside the trig function.
+ 3. θ is a section of the 2πn period and increases by increments of 2π/N, allowing it to replace 2πn/N.
  
- `horizontal(θ) = (1/N)(Acos((θkn/N)+p)+...)`
+ This can then be put back into context of the summation:
  
- `vertical(θ)   = (1/N)(Asin((θkn/N)+p)+...)`
+ `(1/N)∑(A(cos(θk+p)+𝓲sin(θk+p)))`
  
- Each point is then a cartesian coordinate `(horizontal(θ), vertical(θ))` where θ < 2π
+ `(1/N)∑(Acos(θk+p)+A𝓲sin(θk+p))`
  
- Because those are stored as cartesian coordinates, there is no reason to keep it on the a+b𝓲 (complex) plane. That allows us to drop the 𝓲.
+ `(1/N)((Acos(θk+p)+A𝓲sin(θk+p)) + ...)`
+ 
+ Since that equation is complex, it can be split into it's real and imaginary components:
+ 
+ `horizontal(θ) = (1/N)(Acos((θk)+p) + ...)` (real)
+ 
+ `vertical(θ)   = (1/N)(Asin((θk)+p) + ...)` (imaginary)
+ 
+ Each point is then a cartesian coordinate `(horizontal(θ), vertical(θ))` where θ < 2π and theta increases in increments of 2π/N
+ 
+ This is nearly identical to what is found in the epicycle drawer in `Scene.swift`
  */
 
 enum inverseOrientation: String {
@@ -100,41 +107,82 @@ enum inverseOrientation: String {
     case vertical   = "sin"
 }
 
-//func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> String{
-//    let N = vectors.count
-//    var equation = "1/\(N) * ("
-//    for (n, vector) in vectors.enumerated() {
-//        let A = vector.amp
-//        let k = vector.freq
-//        let p = vector.phase
-//
-//        let inside = "θ*\(k * n / N) + \(p)"
-//        let segment = "\(A)\(orientation.rawValue)(\(inside))"
-//        equation += "\(segment)+"
-//    }
-//    return equation
-//}
+func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> String {
+    let N = vectors.count
+    var equation = "1/\(N) * ("
+    for vector in vectors {
+        let A = vector.amp
+        let k = vector.freq
+        let p = vector.phase
 
-
-// We can then use that equation to fill our Scene with the points
-var scene = Scene()
-
-func applyfourier(on file: String) {
-    var fouriered = dft(points: points(from: file))
-    
-    fouriered.sort{ $0.amp > $1.amp }
-    
-    scene.setPoints(to: fouriered)
+        let inside = "\(k)θ + \(p)"
+        let segment = "\(A)*\(orientation.rawValue)(\(inside))"
+        equation += "(\(segment))+"
+    }
+    equation+=")"
+    return equation
 }
 
+/*:
+ The equations generted graph a full represtation of the original pathh when plotted
+ 
+ For example, the equations for `swiftLogo` can be plotted using matplotlib in python:
+ 
+ ```python
+ import matplotlib.pyplot as plt
+ import numpy as np
+ theta = 0
+ x = []
+ y = []
+ while theta <= 2 * np.pi:
+     x.append(horizontal(theta))
+     y.append(vertical(theta))
+     theta += (2 * np.pi) / 53 # N = 53
+ plt.plot(x, y)
+ plt.xscale = np.pi
+ plt.title("Swift Logo")
+ plt.show()
+ ```
+ 
+ That generates:
+ 
+ ![inverse graphed](Images/invex.png)
+ 
+ As you can see, it maintains the path with very few inconsistencies.
+ */
+
+/*:
+ We can then use the dft equation to fill our Scene with the points and display them using a method nearly identical to the inverse dft
+ 
+ If you are interested in how it draws, check out Scene.swift! It is all explained in depth there.
+ 
+ (Having the SKScene class in here would be too cluttered)
+ */
+
+var scene = Scene()
+func applyfourier(on file: String) {
+    // This Gets the Points from the Selected File
+    var fouriered = dft(points: points(from: file))
+    
+    // This Sorts the Epicyles By Amplitude (It Looks The Better Storted Largest to Smallest)
+    // Because The Spicycles Stacked Are the Equilivant of Adding Trig Functions, Order Does Not Matter.
+    // You can test that by changing the sort function, or removing it all together.
+    fouriered.sort{ $0.amp > $1.amp }
+    
+    // This Sets The Epicycles to What The DFT Returned
+    scene.epicycles = fouriered
+}
+
+// Load Default Path
 applyfourier(on: "swiftLogo")
 
 /*:
- If you are interested in how it draws, check out Scene.swift! It is all explained in depth there.
- (Moving the SKScene class to here would be too cluttered)
+ Some Code Here Needs to Be Triggered By Events That Occur in the Sources Folder
+ 
+ (such as the dropdown selecting to new file to fourier or the button printing the inverse)
+ 
+ This Just Sets Observers So This Code Can React To The UI
  */
-
-// This Just Sets Observers So This Code Can React To The UI
 NotificationCenter.default.addObserver(forName: .FileChanged, object: nil, queue: nil) { notification in
     let file = notification.object as! String
     applyfourier(on: file)
@@ -142,18 +190,18 @@ NotificationCenter.default.addObserver(forName: .FileChanged, object: nil, queue
 
 NotificationCenter.default.addObserver(forName: .InverseFourier, object: nil, queue: nil) { _ in
     print("The X Values are From: horizontal(θ) =")
-//    print(inverseDFT(on: x, for: .horizontal))
+    print(inverseDFT(on: scene.epicycles, for: .horizontal))
     print("")
     print("The Y Values are From: vertical(θ) =")
-//    print(inverseDFT(on: y, for: .vertical))
+    print(inverseDFT(on: scene.epicycles, for: .vertical))
     print("")
-    print("Where θ < 2π")
+    print("Where θ < 2π increasing in increments of 2π/N")
 }
 
-// Now lets display it!
+//: All That's Left is Displaying It!
 import PlaygroundSupport
-PlaygroundPage.current.liveView = ViewController(with: scene)
-
+let vc = ViewController(with: scene)
+PlaygroundPage.current.liveView = vc
 
 
 //: All Images Are Public Domain from Wikimedia

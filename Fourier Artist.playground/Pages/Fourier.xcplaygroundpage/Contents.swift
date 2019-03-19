@@ -3,11 +3,13 @@
  Hello! I'm Liam Rosenfeld. I'm a 10th grader from Florida and this is my WWDC Scholarship application.
  It is a Swift Playground that is able to draw paths using discrete Fourier transformations.
  
- If you want to see it working, run it right away and it will draw the Swift logo, and to create your own paths just click [here](@next). But if you want to explore how this works, just keep reading.
+ If you want to see it working, run the playground right away and it will draw the Swift logo in the live view. To create your own paths, click [here](@next) and follow the instructions on the new page. But if you want a full explanation on how this works, just keep reading or skip down to the code.
  */
 
 /*:
- Let's start with what Fourier transforms are. In short, they are a collection of equations that are able to spit functions into their component trigonometric functions.
+ ## Fourier Transforms
+ 
+ Let's start with a general explantion of Fourier transforms. In short, they are a collection of equations that are able to split functions into their component trigonometric functions.
  
  This can be used for many useful products, such as spectrographs, along with some more theoretical examples, such as what you are about to see.
  */
@@ -19,7 +21,7 @@
  
  But as you may have noticed, it is an infinite integral, which is a problem for computers as they don't handle infinity well.
  
- That is why this program will use the Discrete Fourier transform:
+ That is why this program will use the Discrete Fourier Transform (DFT):
  
  ![dft](Images/dft.jpg)
  
@@ -27,11 +29,13 @@
  */
 
 /*:
- Let's break the goal of the distributed Fourier transform down.
+ ## Discrete Fourier Transform
+ 
+ Let's break the goal of the Discrete Fourier transform down.
  
  The goal is to turn a collection of signals (x) into a collection of waves (X)
  
- Waves have three characteristics: amplitude, frequency, phase.
+ Waves have three characteristics: amplitude, frequency, and phase.
  - Amplitude is the distance between the midpoint and peak
  - Frequency is how many times the wave repeats per period
  - Phase is a horizontal translation applied to the wave (changes where it starts)
@@ -40,13 +44,13 @@
  
  When you run the playground, you see many rotating epicycles (the circles) those are just waves expressed on a polar graph.
  
- They are all appended to the one prior because the process to display involves adding them together as vectors, and that is how vectors are added. This will be covered in more detail with the inverse distributed Fourier transform later.
+ The epicycles are attached to the one prior at the point where the line intersects with the circle. That is because the epicycles are just an extended visualation of rotating vectors, and vectors are added by attaching their endpoints together. The displaying epicycles will be covered in more detail later with the Inverse Discrete Fourier Transform.
  */
 
 /*:
- To cover the implementation, let's start with the input
+ To cover the implementation, let's start with the input.
  
- Distributed Fourier transforms take in a series of points in the form:
+ Distributed Fourier transforms take in an array of points in the form:
  
  `[(x1, y1), (x2, y2)...]`
  
@@ -54,31 +58,34 @@
  
  `[x1+𝓲y1, x2+𝓲y2]`
  
- That is how they will be dealt with for the remainder of the process.
+ The input will be handled in it's complex form for the entirety of the process.
  
- The next section to cover is what will be multiplied with x[n] in the summation.
+ The next section to cover is what is inside the summation (∑).
+ As you can see in the Discrete Fourier Transform equation above, the section multiplied with `x[n]` is `e^(𝓲2πkn/N)`.
+ That can then be expanded using Euler's identity of `e^(𝓲t) = cos(t)+𝓲sin(t)` to:
  
- As you can see in the equation above, it starts as `e^(𝓲2πkn/N)` but is then expanded to `cos(2πkn/N)+𝓲sin(2πkn/N)` using Euler's identity
+ `cos(2πkn/N)+𝓲sin(2πkn/N)`
  
- That can then be put into context as
+ When that is placed back with the points (`x[n]`) it becomes:
  
- `X[k]=∑(x[n]+𝓲y[n])*(cos(2πkn/N)+𝓲sin(2πkn/N))`
+ `(x[n]+𝓲y[n])*(cos(2πkn/N)+𝓲sin(2πkn/N))`
  
- Because both the point and the e^(𝓲2πkn/N) are now complex numbers, they can be multiplied using FOIL, a concept from basic Algebra.
+ Because both sides of the multiplication sign are complex numbers, they can be multiplied using FOIL, a concept from basic Algebra.
+ That looks like:
  
  `(a+bi)(c+di) = ac + adi + bci - bd = (ac - bd) + i(ad + bc)`
  
- In the code below, it is simply written as '*' because the operator is overloaded to do what's above in `Complex.swift`
+ In the code below, that FOIL is simply written as '*' because the operator is overloaded in `Complex.swift`
  
- The `X[k]=∑...` means two nested for loops.
- - The outer one is from `X[k]` which iterates over k values (one for every point starting at zero), adding a new wave to X each iteration.
- - The inner one is from the `∑` which iterates over n values, adding the complex number `(x[n]+𝓲y[n])*(cos(2πkn/N)+𝓲sin(2πkn/N))` to the total each iteration.
+ The last section of the equation is the `X[k]=∑`, which causes two nested `for` loops
+ - The outer one is from `X[k]` which iterates over k values (one for every point starting at zero), appending a new wave to the `X` array each iteration (in which one summation takes place).
+ - The inner one is from the summation (`∑`) which iterates over n values, adding the result of `(x[n]+𝓲y[n])*(cos(2πkn/N)+𝓲sin(2πkn/N))` to the total complex number each iteration.
  
  After the summation finds the final complex number it must find the properties of the wave (epicycle).
  
  That includes frequency, amplitude, and phase.
  - frequency is just `k`, as the wave is `X[k]`
- - amplitude is the magnitude of the complex number thought of as a vector. The Pythagorean Theorem is all that is required to find it
+ - amplitude is the magnitude of the complex number thought of as a vector. The Pythagorean Theorem is all that is required to find it.
  - phase is the angle from the positive x-axis. It is found using arctan2, as that is it's defined purpose.
  
  Those are all used later when displaying
@@ -94,21 +101,21 @@ func dft(points: [Point]) -> [Wave] {
     let N = points.count
     
     for k in 0..<N {
-        var complex = Complex() // where output of summation is stored
+        var sum = Complex() // where output of summation is stored
         
         for n in 0..<N {
             let phi = (2 * Double.pi * Double(k) * Double(n)) / Double(N) // Inside the Paren
             let cPhi = Complex(re: cos(phi), im: -sin(phi)) // Inside the Brackets
-            complex += points[n].complex * cPhi // For complex number operator overloads, see Complex.swift
+            sum += points[n].complex * cPhi // For complex number operator overloads, see Complex.swift
         }
         
         // This Scales It Down (Not part of the original equation)
-        complex.re /= Double(N)
-        complex.im /= Double(N)
+        sum.re /= Double(N)
+        sum.im /= Double(N)
         
         // Calculates Atributes of Vectors
-        let amp = sqrt(complex.re * complex.re + complex.im * complex.im)
-        let phase = atan2(complex.im, complex.re)
+        let amp = sqrt(sum.re * sum.re + sum.im * sum.im)
+        let phase = atan2(sum.im, sum.re)
         
         // Saves it into the array
         vectors.append(Wave(freq: k, amp: amp, phase: phase))
@@ -118,11 +125,13 @@ func dft(points: [Point]) -> [Wave] {
 }
 
 /*:
+ ## Inverse Discrete Fourier Transform
+ 
  The array generated can then be converted back into an equation using the inverse:
  
  ![inverse dft](Images/inv.jpg)
  
- Just like for the distrubuted Fourier transform, the `e^(𝓲t)` can be expanded to `cos(t)+𝓲sin(t)` using Euler's identity.
+ Just like for the Discrete Fourier Transform, the `e^(𝓲t)` can be expanded to `cos(t)+𝓲sin(t)` using Euler's identity.
  That will cause the section past the summation to be:
  
  `X[k](cos(2πkn/N)+𝓲sin(2πkn/N))`
@@ -133,10 +142,10 @@ func dft(points: [Point]) -> [Wave] {
  
  That is mathematically sound because:
  - amplitude (A) is simply X[k] in the original equation. It is also equal to 'r' in the complex polar form.
- - phase (P) is the starting angle, so it is just added to the radians inside the trig function.
+ - phase (P) is the starting angle, so it is expressed by adding it to the value inside the trig function.
  - θ is a section of the 2πn period and increases by increments of 2π/N, allowing it to replace 2πn/N.
  
- This can then be put back into context of the summation:
+ This expanded complex number can then be put back into the full equation:
  
  `(1/N)∑(A(cos(θk+p)+𝓲sin(θk+p)))`
  
@@ -150,13 +159,15 @@ func dft(points: [Point]) -> [Wave] {
  
  `vertical(θ)   = (1/N)(Asin((θk)+p) + ...)` (imaginary)
  
- Each point is then a cartesian coordinate `(horizontal(θ), vertical(θ))` where θ < 2π and theta increases in increments of 2π/N
+ Each point is then a cartesian coordinate `(horizontal(θ), vertical(θ))` where θ < 2π and increases in increments of 2π/N
  
- In the display, a vector connects the center of each circle to a point on the circle θ radians from the positive x axis.
- That drawn vector of each epicycle is equal to the A(cos(θk+p)+𝓲sin(θk+p)) of each epicycle because they are just different ways of expressing the same vector.
- Since vectors are addded by apphending one to the other, the display also serves as a visual proof to the mathematical proof above and visa-versa.
+ In the display, a vector connects the center of each epicycle to a point on the circle `θk + p` radians from the positive x axis.
+ In the math above, the vector is equal to `A(cos(θk+p)+𝓲sin(θk+p))` filled with the properties of the epicycle.
+ `A(cos(θk+p)+𝓲sin(θk+p))` is simply the formula for a complex number in polar form (`r(cos(θ)+𝓲sin(θ))`) but adjusted to be a point on the circle `θk + p` radians away from the positive x-axis.
+ Because both of those vectors are defined excactly the same, they are proven equal.
+ That equivalency allows the display to serve as a proof to the math above and visa-versa.
  
- This is nearly identical to what is found in the epicycle drawer in `Scene.swift`
+ This process is nearly identical to what is used in the epicycle drawer found in `Scene.swift`
  */
 
 enum inverseOrientation: String {
@@ -181,9 +192,9 @@ func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> Stri
 }
 
 /*:
- The equations generted graph a full represtation of the original pathh when plotted
+ When graphed in the form `(horizontal(θ), vertical(θ))`, equations trace a full representation of the original path.
  
- For example, the equations for `swiftLogo` can be plotted using matplotlib in python:
+ For example, the equations for `swiftLogo` can be plotted using `matplotlib` in python:
  
  ```python
  import matplotlib.pyplot as plt
@@ -209,10 +220,11 @@ func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> Stri
  */
 
 /*:
- We can then use the dft equation to fill our Scene with the points and display them using a method nearly identical to the inverse dft
+ ## Displaying
  
- If you are interested in how it draws, check out Scene.swift! It is all explained in depth there.
+ We can then use the DFT function to fill our drawing SKScene with the points and display them using a method nearly identical to the inverse DFT.
  
+ If you are interested in how it draws, check out `Scene.swift`! It is explained in depth there.
  (Having the SKScene class in here would be too cluttered)
  */
 
@@ -234,11 +246,11 @@ func applyfourier(on file: String) {
 applyfourier(on: "swiftLogo")
 
 /*:
- Some Code Here Needs to Be Triggered By Events That Occur in the Sources Folder
+ Some code in this file needs to be triggered by events that occur in the `Sources` folder.
  
- (such as the dropdown selecting to new file to Fourier or the button printing the inverse)
+ (such as the dropdown selecting a new path or the button printing the inverse)
  
- This Just Sets Observers So This Code Can React To The UI
+ This code below sets observers to do just that.
  */
 NotificationCenter.default.addObserver(forName: .FileChanged, object: nil, queue: nil) { notification in
     let file = notification.object as! String
@@ -255,7 +267,7 @@ NotificationCenter.default.addObserver(forName: .InverseFourier, object: nil, qu
     print("Where θ < 2π increasing in increments of 2π/N")
 }
 
-//: All That's Left is Displaying It!
+//: All that is left is displaying it in the Live View!
 import PlaygroundSupport
 let vc = ViewController(with: scene)
 PlaygroundPage.current.liveView = vc

@@ -12,7 +12,7 @@ import GameplayKit
 
 public class ViewController : NSViewController {
     
-    // Setup
+    // MARK: - Setup
     var scene: Scene
     public init(with scene: Scene) {
         self.scene = scene
@@ -25,9 +25,10 @@ public class ViewController : NSViewController {
     }
     
 
-    // MARK: Interface
+    // MARK: - Interface
     var skView = SKView()
     var jsonSelector = NSPopUpButton(frame: NSRect.zero)
+    
     override public func loadView() {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 900, height: 600))
         let view = NSView(frame: frame)
@@ -35,19 +36,46 @@ public class ViewController : NSViewController {
         jsonSelector = createSelector()
         skView = createSKView()
         let inverseButton = createInverseButton()
+        let labels = createLabels()
         
         view.addSubview(skView)
         view.addSubview(jsonSelector)
         view.addSubview(inverseButton)
+        labels.forEach{ view.addSubview($0) }
         
         self.view = view
     }
     
+    func createLabels() -> [NSTextField] {
+        var labels = [NSTextField]()
+        
+        let selectorLabel = NSTextField(labelWithString: "Select Path:")
+        var place = CGPoint(x: 25, y: 55)
+        var size = CGSize(width: selectorLabel.frame.size.width, height: 15)
+        selectorLabel.frame = NSRect(origin: place, size: size)
+        labels.append(selectorLabel)
+        
+        let segueLabel = NSTextField(labelWithString: "and")
+        place = CGPoint(x: 160, y: 30)
+        size = CGSize(width: selectorLabel.frame.size.width, height: 15)
+        segueLabel.frame = NSRect(origin: place, size: size)
+        labels.append(segueLabel)
+        
+        return labels
+    }
+    
     func createSelector() -> NSPopUpButton {
-        let selector = NSPopUpButton(frame: NSRect(origin: CGPoint.zero, size: CGSize(width: 100, height: 50)))
+        // Position
+        let place = CGPoint(x: 20, y: 20)
+        let size = CGSize(width: 135, height: 30)
+        let frame = NSRect(origin: place, size: size)
+        let selector = NSPopUpButton(frame: frame)
+        
+        // On Click
         selector.target = self
         selector.action = #selector(fileSelected)
         
+        // Fill
         selector.addItem(withTitle: "swiftLogo")
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: Directories.resources, includingPropertiesForKeys: nil)
@@ -64,6 +92,15 @@ public class ViewController : NSViewController {
         return selector
     }
     
+    func createInverseButton() -> NSButton {
+        let button = NSButton(title: "Print Equation", target: self, action: #selector(giveInverse))
+        let place = CGPoint(x: 190, y: 20)
+        let size = CGSize(width: button.frame.size.width, height: 30)
+        let frame = NSRect(origin: place, size: size)
+        button.frame = frame
+        return button
+    }
+    
     func createSKView() -> SKView {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 900, height: 600))
         let view = SKView(frame: frame)
@@ -73,26 +110,18 @@ public class ViewController : NSViewController {
         scene.size = sceneSize
         scene.scaleMode = .aspectFit
         
+        // Set Properties
+        view.preferredFramesPerSecond = 20 // Makes it Move Slower
+        
         // Present
         view.presentScene(scene)
         view.ignoresSiblingOrder = true
         
-        // REMOVE LATER
-        view.showsFPS = true
-        view.showsNodeCount = true
-        // END REMOVE LATER
-        
         return view
     }
     
-    func createInverseButton() -> NSButton {
-        let button = NSButton(title: "Print Equation", target: self, action: #selector(giveInverse))
-        let place = CGPoint(x: 200, y: 20)
-        let frame = NSRect(origin: place, size: button.frame.size)
-        button.frame = frame
-        return button
-    }
     
+    // MARK: - Actions
     @objc func fileSelected() {
         var notification = Notification(name: .FileChanged)
         guard let selectedPath = jsonSelector.selectedItem?.title else {

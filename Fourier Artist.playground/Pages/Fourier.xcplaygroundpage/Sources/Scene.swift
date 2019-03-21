@@ -11,12 +11,12 @@ import GameplayKit
 import Foundation
 
 public class Scene: SKScene {
-    // MARK: Constants
+    // MARK: - Constants
     private var theta = 0.0 // Theta on Polar Coordinate. Acts as Time.
     private var delta = 0.0
     private var path = [CGPoint]()
     
-    // MARK: Epicycles
+    // MARK: - Epicycles
     public var epicycles = [Wave]() {
         didSet {
             path.removeAll()
@@ -31,7 +31,7 @@ public class Scene: SKScene {
         self.backgroundColor = NSColor.black
     }
     
-    // MARK: Cycle
+    // MARK: - Cycle
     override public func update(_ currentTime: TimeInterval) {
         // Reset
         self.removeAllChildren()

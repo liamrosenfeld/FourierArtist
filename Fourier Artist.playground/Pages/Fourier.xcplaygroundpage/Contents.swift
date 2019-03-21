@@ -3,7 +3,9 @@
  Hello! I'm Liam Rosenfeld. I'm a 10th grader from Florida and this is my WWDC Scholarship application.
  It is a Swift Playground that is able to draw paths using discrete Fourier transformations.
  
- If you want to see it working, run the playground right away and it will draw the Swift logo in the live view. To create your own paths, click [here](@next) and follow the instructions on the new page. But if you want a full explanation on how this works, just keep reading or skip down to the code.
+ If you want to see it working, run the playground right away and it will draw the Swift logo in the live view. But if you want a full explanation on how this works, just keep reading or skip down to the code.
+ 
+ **To create your own paths, click [here](@next) and follow the instructions on the new page.**
  */
 
 /*:
@@ -11,7 +13,7 @@
  
  Let's start with a general explantion of Fourier transforms. In short, they are a collection of equations that are able to split functions into their component trigonometric functions.
  
- This can be used for many useful products, such as spectrographs, along with some more theoretical examples, such as what you are about to see.
+ This can be used for many useful products, such as spectrographs, along with some more theoretical examples, such as what you are about to see (points -> component functions).
  */
 
 /*:
@@ -97,7 +99,7 @@
 import Foundation
 
 func dft(points: [Point]) -> [Wave] {
-    var vectors = [Wave]() // "X" in the equation above. It's just a collection of complex vectors.
+    var vectors = [Wave]() // "X" in the equation above.
     let N = points.count
     
     for k in 0..<N {
@@ -113,7 +115,7 @@ func dft(points: [Point]) -> [Wave] {
         sum.re /= Double(N)
         sum.im /= Double(N)
         
-        // Calculates Atributes of Vectors
+        // Calculates Atributes of Vectors (Used as Properties of the Wave)
         let amp = sqrt(sum.re * sum.re + sum.im * sum.im)
         let phase = atan2(sum.im, sum.re)
         
@@ -167,7 +169,7 @@ func dft(points: [Point]) -> [Wave] {
  Because both of those vectors are defined excactly the same, they are proven equal.
  That equivalency allows the display to serve as a proof to the math above and visa-versa.
  
- This process is nearly identical to what is used in the epicycle drawer found in `Scene.swift`
+ This process below is used to generate the printed equation, but it is also nearly identical to the epicycle drawer found in `Scene.swift`
  */
 
 enum inverseOrientation: String {
@@ -196,18 +198,21 @@ func inverseDFT(on vectors: [Wave], for orientation: inverseOrientation) -> Stri
  
  For example, the equations for `swiftLogo` can be plotted using `matplotlib` in python:
  
+ (The equations are abstracted to horizontal(theta) and vertical(theta) for readability)
+ 
  ```python
  import matplotlib.pyplot as plt
- import numpy as np
+ import math as m
+ N = 53
  theta = 0
  x = []
  y = []
- while theta <= 2 * np.pi:
-     x.append(horizontal(theta))
-     y.append(vertical(theta))
-     theta += (2 * np.pi) / 53 # N = 53
+ while theta <= 2 * m.pi:
+    x.append(horizontal(theta))
+    y.append(vertical(theta))
+    theta += (2 * m.pi) / N
  plt.plot(x, y)
- plt.xscale = np.pi
+ plt.xscale = m.pi
  plt.title("Swift Logo")
  plt.show()
  ```
@@ -279,6 +284,7 @@ PlaygroundPage.current.liveView = vc
  - [3blue1brown's YouTube Video](https://youtu.be/spUNpyF58BY)
  - [Better Explained's Interactive Guide](https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/)
  - [GoldPlatedGoof's YouTube Video](https://youtu.be/2hfoX51f6sg)
+ - And of Course... My Math Class
  
  ### Images
  - All Equation Images Are Public Domain from Wikimedia

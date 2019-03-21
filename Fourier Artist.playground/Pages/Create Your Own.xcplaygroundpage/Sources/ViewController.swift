@@ -32,9 +32,10 @@ public class ViewController: NSViewController {
         saveButton.setFrameOrigin(saveButtonPos)
         
         let namePos = NSPoint(x: 230, y: 410)
-        let nameSize = NSSize(width: 50, height: 15)
+        let nameSize = NSSize(width: 75, height: 15)
         let nameFrame = NSRect(origin: namePos, size: nameSize)
         nameField.frame = nameFrame
+        nameField.string = "my path"
         
         let nameLabel = NSTextField(labelWithString: "Name:")
         var labelFrame = nameFrame

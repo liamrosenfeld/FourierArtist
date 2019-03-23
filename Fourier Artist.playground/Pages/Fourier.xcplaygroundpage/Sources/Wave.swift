@@ -1,8 +1,8 @@
 //
-//  Fourier.swift
+//  Wave.swift
 //  Fourier Artist
 //
-//  Created by Liam on 2/10/19.
+//  Created by Liam on 3/16/19.
 //  Copyright © 2019 Liam Rosenfeld. All rights reserved.
 //
 

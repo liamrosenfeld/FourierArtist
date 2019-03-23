@@ -9,9 +9,11 @@
 import Foundation
 
 public struct Point {
+    // Instance Variables
     public var x: Double
     public var y: Double
     
+    // Computed Variables
     public var cgPoint: CGPoint {
         return CGPoint(x: x, y: y)
     }

@@ -20,8 +20,6 @@ public class ViewController: NSViewController {
         
         let drawFrame = CGRect(origin: CGPoint.zero, size: CGSize(width: 500, height: 400))
         drawView.frame = drawFrame
-        drawView.wantsLayer = true
-        drawView.layer?.backgroundColor = .white
         
         let clearButton = NSButton(title: "Clear", target: self, action: #selector(clear))
         let clearButtonPos = NSPoint(x: 10, y: 400)

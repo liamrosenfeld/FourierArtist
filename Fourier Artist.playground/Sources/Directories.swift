@@ -15,5 +15,4 @@ public struct Directories {
         }
         return url.resolvingSymlinksInPath().deletingLastPathComponent()
     }
-    
 }

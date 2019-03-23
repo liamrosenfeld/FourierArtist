@@ -71,7 +71,7 @@ public class Scene: SKScene {
             center.y += CGFloat(radius * sin(phi))
             
             // Draw Ellipse and Line Connecting Centers
-            drawEllipse(center: prevCenter, radius: radius)
+            drawCircle(center: prevCenter, radius: radius)
             drawLine(from: prevCenter, to: center)
         }
         

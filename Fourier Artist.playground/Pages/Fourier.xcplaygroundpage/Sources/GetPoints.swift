@@ -1,3 +1,11 @@
+//
+//  GetPoints.swift
+//  Fourier Artist
+//
+//  Created by Liam on 3/03/19.
+//  Copyright © 2019 Liam Rosenfeld. All rights reserved.
+//
+
 import Foundation
 
 public func points(from file: String) -> [Point] {

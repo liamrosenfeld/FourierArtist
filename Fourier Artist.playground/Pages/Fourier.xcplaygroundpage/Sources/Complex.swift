@@ -1,3 +1,11 @@
+//
+//  Complex.swift
+//  Fourier Artist
+//
+//  Created by Liam on 3/16/19.
+//  Copyright © 2019 Liam Rosenfeld. All rights reserved.
+//
+
 import Foundation
 
 public struct Complex {

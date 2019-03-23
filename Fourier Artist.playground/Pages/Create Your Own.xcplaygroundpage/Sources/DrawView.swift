@@ -6,7 +6,7 @@
 //  Copyright © 2019 Liam Rosenfeld. All rights reserved.
 //
 
-import AppKit
+import Cocoa
 
 class DrawView: NSView {
     var drawColor = NSColor.black
@@ -29,6 +29,11 @@ class DrawView: NSView {
     func initBezierPath() {
         path.lineCapStyle = NSBezierPath.LineCapStyle.round
         path.lineJoinStyle = NSBezierPath.LineJoinStyle.round
+    }
+    
+    // Setup
+    override func viewWillDraw() {
+        setBackground(to: .white)
     }
     
     // MARK: - Touch handling
@@ -150,9 +155,18 @@ class DrawView: NSView {
         let fileURL = dir.appendingPathComponent("\(name).json")
         do {
             try text.write(to: fileURL, atomically: false, encoding: .utf8)
+            saveSuccess()
         }
         catch {
             print(error.localizedDescription)
+        }
+    }
+    
+    func saveSuccess() {
+        clear()
+        setBackground(to: NSColor.green.cgColor)
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(200)) {
+            self.setBackground(to: .white)
         }
     }
     

@@ -8,4 +8,4 @@ The Fourier Transform and a description of the math can be found on the first pa
 
 You can create your own path on the second page.
 
-**Status: In Review**
+**Status: Accepted**

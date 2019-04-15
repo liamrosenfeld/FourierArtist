@@ -239,7 +239,7 @@ func applyfourier(on file: String) {
     var fouriered = dft(points: points(from: file))
     
     // This Sorts the Epicyles By Amplitude (It Looks The Better Storted Largest to Smallest)
-    // Because The Spicycles Stacked Are the Equilivant of Adding Trig Functions, Order Does Not Matter.
+    // Because The Epicycles Stacked Are the Equilivant of Adding Trig Functions, Order Does Not Matter.
     // You can test that by changing the sort function, or removing it all together.
     fouriered.sort{ $0.amp > $1.amp }
     
